@@ -43,6 +43,9 @@ func run(c *cli.Context) error {
 	partitionCount := c.Int("partitions")
 
 	replicationFactor := c.Int("rf")
+	if replicationFactor > len(brokers) {
+		return fmt.Errorf("replication factor is larger than the number of brokers. bailing")
+	}
 
 	if !c.IsSet("topic") {
 		return fmt.Errorf("the topic to reassign is required")
@@ -102,6 +105,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		panic(err)
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 }
