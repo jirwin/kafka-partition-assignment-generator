@@ -14,7 +14,6 @@ type KafkaPartition struct {
 	Topic     string   `json:"topic"`
 	Partition int      `json:"partition"`
 	Replicas  []int    `json:"replicas"`
-	LogDirs   []string `json:"log_dirs"`
 }
 
 type KafkaPartitions struct {
@@ -63,7 +62,6 @@ func run(c *cli.Context) error {
 			Partition: i,
 			Topic:     topic,
 			Replicas:  calculateReplicas(i, replicationFactor, brokers),
-			LogDirs:   []string{"any"},
 		}
 	}
 
