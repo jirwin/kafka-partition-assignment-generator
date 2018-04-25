@@ -4,16 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"math/rand"
-	"time"
-
 	"encoding/json"
 
 	"gopkg.in/urfave/cli.v1"
 )
 
-var randSource = rand.NewSource(time.Now().UnixNano())
-var r1 = rand.New(randSource)
 
 type KafkaPartition struct {
 	Topic     string   `json:"topic"`
@@ -27,23 +22,10 @@ type KafkaPartitions struct {
 	Partitions []KafkaPartition `json:"partitions"`
 }
 
-func containsBroker(list []int, broker int) bool {
-	for _, l := range list {
-		if l == broker {
-			return true
-		}
-	}
-
-	return false
-}
-
-func calculateReplicas(repfactor int, brokers []int) []int {
-	ret := []int{}
-	for len(ret) < repfactor {
-		idx := r1.Intn(len(brokers))
-		if !containsBroker(ret, brokers[idx]) {
-			ret = append(ret, brokers[idx])
-		}
+func calculateReplicas(partition, repfactor int, brokers []int) []int {
+	ret := make([]int, repfactor)
+	for i := 0; i < repfactor; i++ {
+		ret[i] = brokers[(partition + i) % len(brokers)]
 	}
 
 	return ret
@@ -77,7 +59,7 @@ func run(c *cli.Context) error {
 		partitionList[i] = KafkaPartition{
 			Partition: i,
 			Topic:     topic,
-			Replicas:  calculateReplicas(replicationFactor, brokers),
+			Replicas:  calculateReplicas(i, replicationFactor, brokers),
 			LogDirs:   []string{"any"},
 		}
 	}
